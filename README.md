@@ -68,3 +68,20 @@ To disable postgres from loading on start, use the `launchctl unload` command:
 ```bash
 launchctl unload -w homebrew.mxcl.postgresql.plist
 ```
+
+## Creating Roles
+
+Postgres doesn't make much of a distinction between a user and a role. A user is simply a role that can log in.
+
+The syntax for creating a role is as follows:
+
+```sql
+CREATE ROLE <role_name> WITH <optional_permissions>
+```
+
+There is also a `CREATE USER` syntax; however, the only difference between `CREATE ROLE` and `CREATE USER` is that the latter will automatically grant `LOGIN` permissions, while the former will not.
+
+[This document](https://www.postgresql.org/docs/current/static/sql-createrole.html) outlines all of the available `optional_permissions` that can be specified.
+
+# Resources
+[Roles and Grant Permissions in PostgreSQL](https://www.digitalocean.com/community/tutorials/how-to-use-roles-and-manage-grant-permissions-in-postgresql-on-a-vps--2)
