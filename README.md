@@ -86,6 +86,21 @@ launchctl unload -w homebrew.mxcl.postgresql.plist
 
 In postgres, a database must have an owner. So, before we start looking at database, schema, and table creation, we have to learn how to manage roles.
 
+## Important Note
+
+It is important to note that, in postgres, unquoted identifiers are always folded to lower case. In other words, any identifier (table name, role, schema, etc) that is not enclosed in double quotes, will be folded, or converted, to it's lower case form.
+
+For example, in the query `CREATE ROLE myRole WITH LOGIN` the identifier `myRole` will be converted to `myrole` when the role is created, unless you wrap it in double quotes. In order to create a case sensitive role `myRole`, you would have to run to query like this:
+
+```sql
+CREATE ROLE "myRole" WITH LOGIN;
+```
+
+As a general rule, it is best to use lower case names for identifiers in order to avoid having to wrap the identifier in double quotes every time you want to use it for the lifetime of the object. If readability is an issue, consider using snake_case. This also has the benefit of being easily distinguishable from the UPPER CASE convention for SQL key words.
+
+For the sake of clarity and readability, all SQL key words will be UPPER CASE while all identifiers will be snake_case.
+
+
 ## Creating Roles
 
 Postgres doesn't make much of a distinction between a user and a role. A user is simply a role that can log in.
@@ -109,7 +124,7 @@ The most common optional permissions are:
 To create a role named test with encrypted password, the command would be as follows:
 
 ```sql
-CREATE ROLE test WITH LOGIN ENCRYPTED PASSWORD 'thePassword';
+CREATE ROLE my_role WITH LOGIN ENCRYPTED PASSWORD 'thePassword';
 ```
 
 When specifying permissions when creating roles, they do not need to be separated with commas. Here, `LOGIN` gives the user login privileges and `ENCRYPTED PASSWORD` instructs the server to encrypt the stored password.
@@ -160,31 +175,31 @@ Some examples using the role myRole.
 By default, each database has a first schema called `public`. When creating a new table in a database, if another schema is not specified, the new table will be part of the `public` schema. All users have access to `public` schema by default. So, one of the first things we want to do is create a new schema.
 
 ```sql
-CREATE SCHEMA mySchema;
+CREATE SCHEMA my_schema;
 ```
 
 The creator of a schema by default has access to use it. But oftentimes we want to grant permission to other roles or groups. Even if a role or group has permission to `SELECT` or perform other table functions, if they do not have access to use the schema a table belongs too, then they cannot use it.
 
-Grant usage of schema mySchema to user myUser:
+Grant usage of schema my_schema to user my_user:
 ```sql
-GRANT USAGE ON SCHEMA mySchema TO myUser;
+GRANT USAGE ON SCHEMA my_schema TO my_user;
 ```
 
 Once a role/group has access to use the schema, we can start granting permissions. *Note that we can do this in any order, as long as usage has been granted to a schema and permissions granted to a table in that schema when the user tries to use it, it makes no difference in what order they were added.*
 
 Grant permissions to all tables in a schema:
 ```sql
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA mySchema TO myUser;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA my_schema TO my_user;
 ```
 
-Grant all permission to myTable table in the foo schema:
+Grant all permission on my_table in the my_schema schema:
 ```sql
-GRANT ALL PERMISSIONS ON mySchema.myTable TO myUser;
+GRANT ALL PERMISSIONS ON my_schema.my_table TO my_user;
 ```
 
 Permissions can be specified on an entire table as above, or on specific columns:
 ```sql
-GRANT SELECT (id), INSERT (id) ON mySchema.myTable TO myUser;
+GRANT SELECT (id), INSERT (id) ON my_schema.my_table TO my_user;
 ```
 
 [PostgreSQL GRANT Documentation](https://www.postgresql.org/docs/10/static/sql-grant.html)
