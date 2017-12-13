@@ -88,7 +88,7 @@ In postgres, a database must have an owner. So, before we start looking at datab
 
 ## Important Note
 
-It is important to note that, in postgres, unquoted identifiers are always folded to lower case. In other words, any identifier (table name, role, schema, etc) that is not enclosed in double quotes, will be folded, or converted, to it's lower case form.
+It is important to note that, in postgres, unquoted identifiers are always folded to lower case. In other words, any identifier (table name, role, schema, etc) that is not enclosed in double quotes `"` `"`, will be folded, or converted, to it's lower case form.
 
 For example, in the query `CREATE ROLE myRole WITH LOGIN` the identifier `myRole` will be converted to `myrole` when the role is created, unless you wrap it in double quotes. In order to create a case sensitive role `myRole`, you would have to run to query like this:
 
@@ -96,10 +96,13 @@ For example, in the query `CREATE ROLE myRole WITH LOGIN` the identifier `myRole
 CREATE ROLE "myRole" WITH LOGIN;
 ```
 
+It is also important to note that values (string literals), are to be enclosed in single quotes `'` `'`, while double quotes are reserved for identifiers.
+
 As a general rule, it is best to use lower case names for identifiers in order to avoid having to wrap the identifier in double quotes every time you want to use it for the lifetime of the object. If readability is an issue, consider using snake_case. This also has the benefit of being easily distinguishable from the UPPER CASE convention for SQL key words.
 
 For the sake of clarity and readability, all SQL key words will be UPPER CASE while all identifiers will be snake_case.
 
+[PostgreSQL Identifiers and Keywords](https://www.postgresql.org/docs/current/static/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS)
 
 ## Creating Roles
 
@@ -160,6 +163,8 @@ Schema can be used to namespace tables so as not to create naming collisions.
 http://www.postgresqlforbeginners.com/2010/12/schema.html
 
 ## Creating Tables
+
+[PostgreSQL CREATE TABLE](https://www.postgresql.org/docs/10/static/sql-createtable.html)
 
 [PostgreSQL Data Types](https://www.postgresql.org/docs/10/static/datatype.html)
 
