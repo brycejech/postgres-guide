@@ -1,24 +1,47 @@
-# MacOS PostgreSQL Guide
 
-This guide is written with PostgreSQL 10.1, Homebrew 1.3.9, and MacOS 10.13.2.
+# Guide to PostgreSQL on MacOS 2019
 
+This guide is written with PostgreSQL 11.4, Homebrew 2.1.9, and MacOS 10.14.5
 
 ---
 
-
-# Installation and Getting Started
-
-## Installing with Homebrew
-
-To install PostgreSQL on MacOS with homebrew, run the following commands in terminal:
+# Installation
 
 ```bash
-# Make sure brew is healthy and working with the latest formulae
-brew update
-brew doctor
+$ brew update
+$ brew doctor
 
-# Install PostgreSQL
-brew install postgres
+$ brew install postgresql
+```
+
+This should leave you with a Postgres db at /usr/local/var/postgres.
+
+If the initial database was not created on install, you need to initialize a database cluster:
+
+```bash
+$ initdb /usr/local/var/postgres
+```
+
+## Create/Drop a Database
+
+[Make sure the server is running](#managing-the-postgresql-service), then use the `createdb` command to create a new database:
+
+```bash
+# create a new database called test_db
+$ createdb test_db
+
+# drop a database
+$ dropdb test_db
+```
+
+## Updating Postgres
+
+```bash
+# Fetch newest version of homebrew and update all formulae
+$ brew update
+
+# Upgrade PostgreSQL itself
+$ brew upgrade postgresql
 ```
 
 ## Notes Regarding Homebrew
@@ -27,46 +50,52 @@ Homebrew will install PostgreSQL in it's own directory in `/usr/local/Cellar/` a
 
 Some configuration files, such as `pg_hba.conf`, can be found in `/usr/local/var/postgres/`
 
-Most tutorials will show that the user `postgres` is the default user. However, when installing PostgreSQL with brew, the default user and db superuser will be the user that ran the installation.
+Most tutorials will show that the user `postgres` is the default user. However, when installing with homebrew, the default user and db superuser will be the user that ran the installation.
 
-## Starting, Stopping, and Restarting PostgreSQL
+---
 
-Use the following commands to start, stop, and restart postgres
+# Managing the PostgreSQL Service
+
+## Start/Stop/Restart
+
+```bash
+# Start the service
+$ brew services start postgresql
+
+# Stop the service
+$ brew services stop postgresql
+
+# Restart the service
+$ brew services restart postgresql
+```
+
+If you have created a different database cluster other than the default, or the default cluster is not running/managed by homebrew you can use `pg_ctl` to start and stop it:
 
 ```bash
 # Start the server
-brew services start postgres
+$ pg_ctl -D /path/to/db/ start
 
 # Stop the server
-brew services stop postgres
-
-# Restart the server
-brew services restart postgres
+$ pg_ctl -D /path/to/db/ stop
 ```
 
-### Run PostgreSQL on Boot with `launchctl`
+## Run Postgres on Boot with `launchctl`
 
 When installed with brew, postgres will come with a `.plist` file that can be used to run it on boot with `launchctl`.
 
 The file path should be `/usr/local/Cellar/postgresql/<postgres version>/homebrew.mxcl.postgresql.plist`.
 
-For example, if your postgres version is 10.1, the `.plist` file will be at the following location.
-```bash
-/usr/local/Cellar/postgresql/10.1/homebrew.mxcl.postgresql.plist
-```
+For example, if your postgres version is 11.4, the `.plist` file will be at `/usr/local/Cellar/postgresql/11.4/homebrew.mxcl.postgresql.plist`
 
-To run postgres on boot, first copy the `.plist` file to your `~/Library/LaunchAgents/` folder (you may need to create the folder if it doesn't already exist).
+To run postgres on boot, first copy the `.plist` file to your `~/Library/LaunchAgents/` folder (you may need to create the folder if it doesn't already exist). Then load it with `launchctl`:
 
 ```bash
-cp /usr/local/Cellar/postgresql/10.1/homebrew.mxcl.postgresql.plist ~/Library/LaunchAgents/
-```
+# Copy the .plist file to LaunchAgents
+cp /usr/local/Cellar/postgresql/11.4/homebrew.mxcl.postgresql.plist ~/Library/LaunchAgents/
 
-Then, add the `.plist` file to `launchctl` like so:
-
-```bash
+# Add to launchctl
 launchctl load -w homebrew.mxcl.postgresql.plist
 ```
-
 PostgreSQL will now load on system start.
 
 To disable postgres from loading on start, use the `launchctl unload` command:
@@ -74,13 +103,31 @@ To disable postgres from loading on start, use the `launchctl unload` command:
 ```bash
 launchctl unload -w homebrew.mxcl.postgresql.plist
 ```
-## Basic Security
-
-[Securing PostgreSQL on Digital Ocean](https://www.digitalocean.com/community/tutorials/how-to-secure-postgresql-on-an-ubuntu-vps)
-
 
 ---
 
+# Connect to the Database Server
+
+To connect to the server once it is running use the `psql` command:
+
+```bash
+# Connect as the current shell user
+$ psql
+
+# Connect as the 'unicorn' user (should prompt for password)
+$ psql -U unicorn
+
+# Connect as the 'unicorn' user, force password prompt
+$ psql -U unicorn -W
+```
+
+---
+
+# Basic Security
+
+[Securing PostgreSQL on Digital Ocean](https://www.digitalocean.com/community/tutorials/how-to-secure-postgresql-on-an-ubuntu-vps)
+
+---
 
 # Managing Permissions
 
@@ -152,7 +199,7 @@ CREATE DATABASE <db_name> OWNER <role_name>;
 
 When creating a new database, the new db will be created from a template. All databases, including templates, can be viewed with the `\l` command from the psql client.
 
-[PostgreSQL CREATE DATABASE](https://www.postgresql.org/docs/10/static/sql-createdatabase.html)
+[PostgreSQL CREATE DATABASE](https://www.postgresql.org/docs/current/static/sql-createdatabase.html)
 
 ## Creating Schema
 
@@ -164,9 +211,9 @@ http://www.postgresqlforbeginners.com/2010/12/schema.html
 
 ## Creating Tables
 
-[PostgreSQL CREATE TABLE](https://www.postgresql.org/docs/10/static/sql-createtable.html)
+[PostgreSQL CREATE TABLE](https://www.postgresql.org/docs/current/static/sql-createtable.html)
 
-[PostgreSQL Data Types](https://www.postgresql.org/docs/10/static/datatype.html)
+[PostgreSQL Data Types](https://www.postgresql.org/docs/current/static/datatype.html)
 
 
 ---
@@ -207,13 +254,13 @@ Permissions can be specified on an entire table as above, or on specific columns
 GRANT SELECT (id), INSERT (id) ON my_schema.my_table TO my_user;
 ```
 
-[PostgreSQL GRANT Documentation](https://www.postgresql.org/docs/10/static/sql-grant.html)
+[PostgreSQL GRANT Documentation](https://www.postgresql.org/docs/current/static/sql-grant.html)
 
 [StackOverflow Post on GRANT](https://stackoverflow.com/a/17355059)
 
 ## Inheriting permissions
 
-[PostgreSQL Role Inheritance Documentation](https://www.postgresql.org/docs/10/static/role-membership.html)
+[PostgreSQL Role Inheritance Documentation](https://www.postgresql.org/docs/current/static/role-membership.html)
 
 The `public` schema has a default `GRANT` of all rights to the role `public`, which every user/group is a member of. To allow access to a schema you created, you must `GRANT USAGE` on the schema to the role that needs to access it.
 
